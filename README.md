@@ -25,7 +25,9 @@ Run this to set up aliases, symlinks, copy config files into place, etc.
 willconfig
 ```
 
-Create a `.gitconfig.work` if you want to override standard `.gitconfig` with settings on this machine.
+Create a `~/.gitconfig.work` if you want to override standard `.gitconfig` with settings on this machine.
+
+Create a `~/.sshconfig.work` if you want to override standard `.ssh/config` with settings on this machine.
 
 # Specific config instructions
 

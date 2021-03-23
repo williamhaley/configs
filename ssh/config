@@ -2,3 +2,4 @@ Host *
 	AddKeysToAgent yes
 	IdentityFile ~/.ssh/id_rsa
 
+Include ~/.sshconfig.work

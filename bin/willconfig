@@ -7,10 +7,10 @@ mkdir -p $HOME/dev
 mkdir -p $HOME/.ssh
 touch $HOME/.ssh/authorized_keys
 chmod 600 $HOME/.ssh/authorized_keys
-ln -sf $CONFIGS_DIR/sshconfig $HOME/.ssh/config
+ln -sf $CONFIGS_DIR/ssh/config $HOME/.ssh/config
 
-ln -sf $CONFIGS_DIR/gitconfig $HOME/.gitconfig
-ln -sf $CONFIGS_DIR/gitconfig.personal $HOME/.gitconfig.personal
+ln -sf $CONFIGS_DIR/git/gitconfig $HOME/.gitconfig
+ln -sf $CONFIGS_DIR/git/gitconfig.personal $HOME/.gitconfig.personal
 
 mkdir -p $HOME/.config
 ln -sfn $CONFIGS_DIR/alacritty $HOME/.config/alacritty
