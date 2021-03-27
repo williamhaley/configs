@@ -1,4 +1,3 @@
-# background -f $CONFIGS_DIR/img/south.jpg
 background -l &
 
 xcompmgr &
