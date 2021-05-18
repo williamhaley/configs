@@ -18,4 +18,3 @@ docker run \
     -v $HOME/plextranscode:/transcode \
     -v /mnt/g/Videos:/data:ro \
     plexinc/pms-docker
-

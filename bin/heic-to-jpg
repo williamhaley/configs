@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+magick mogrify -monitor -format jpg "${1}"
+

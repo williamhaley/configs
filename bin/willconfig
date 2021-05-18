@@ -4,7 +4,7 @@ echo "Setting up configs."
 
 mkdir -p $HOME/dev
 
-mkdir -p $HOME/.ssh
+mkdir -p $HOME/.ssh/sockets
 touch $HOME/.ssh/authorized_keys
 chmod 600 $HOME/.ssh/authorized_keys
 ln -sf $CONFIGS_DIR/ssh/config $HOME/.ssh/config
@@ -14,10 +14,6 @@ ln -sf $CONFIGS_DIR/git/gitconfig.personal $HOME/.gitconfig.personal
 
 mkdir -p $HOME/.config
 ln -sfn $CONFIGS_DIR/alacritty $HOME/.config/alacritty
-
-mkdir -p $HOME/.atom
-ln -sf $CONFIGS_DIR/atom/config.cson $HOME/.atom/config.cson
-ln -sf $CONFIGS_DIR/atom/styles.less $HOME/.atom/styles.less
 
 mkdir -p $HOME/.aws
 ln -sf $CONFIGS_DIR/aws/config $HOME/.aws/config
@@ -40,9 +36,6 @@ ln -sf $CONFIGS_DIR/cmus/rc $HOME/.config/cmus/
 mkdir -p $HOME/.config/
 ln -sf $CONFIGS_DIR/mimeapps.list $HOME/.config/mimeapps.list
 
-mkdir -p $HOME/.local/share/barrier
-ln -sf $CONFIGS_DIR/barrier/barrier.conf $HOME/.local/share/barrier/.barrier.conf
-
 if [ "$IS_MAC" = true ];
 then
 	mkdir -p "$HOME/Library/Application Support/Code/User"
@@ -53,24 +46,13 @@ fi
 
 if [ "$IS_LINUX" = true ];
 then
-	mkdir -p $HOME/.config/openbox
-	ln -sf $CONFIGS_DIR/openbox/menu.xml $HOME/.config/openbox/menu.xml
-	ln -sf $CONFIGS_DIR/openbox/autostart $HOME/.config/openbox/autostart
-	ln -sf $CONFIGS_DIR/openbox/rc.xml $HOME/.config/openbox/rc.xml
-	mkdir -p $HOME/.themes
-	ln -sfn $CONFIGS_DIR/openbox/Custom $HOME/.themes/Custom
-
 	mkdir -p $HOME/.config/Code/User
 	ln -sf $CONFIGS_DIR/vscode/settings.json "$HOME/.config/Code/User/settings.json"
 
-	ln -sf $CONFIGS_DIR/X/xscreensaver "${HOME}/.xscreensaver"
 	ln -sf $CONFIGS_DIR/X/xbindkeysrc "${HOME}/.xbindkeysrc"
 	ln -sf $CONFIGS_DIR/X/Xmodmap "${HOME}/.Xmodmap"
 	ln -sf $CONFIGS_DIR/X/xinitrc "${HOME}/.xinitrc"
 	ln -sf $CONFIGS_DIR/X/Xresources $HOME/.Xresources
-
-	mkdir -p $HOME/.config/tint2
-	ln -sf $CONFIGS_DIR/tint2rc "${HOME}/.config/tint2/tint2rc"
 
 	mkdir -p $HOME/.config
 	ln -sfn $CONFIGS_DIR/i3 "${HOME}/.config/i3"

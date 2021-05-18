@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+sshkey=$1
+
+shift
+
+GIT_SSH_COMMAND="ssh -i ${sshkey} -o IdentitiesOnly=yes -F /dev/null" $@
+

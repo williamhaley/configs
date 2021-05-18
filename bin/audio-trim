@@ -11,13 +11,13 @@ $(basename "$0") FILE DURATION
 EOF
 }
 
-if [ -z "$1" ];
+if [ -z "${1}" ];
 then
 	show_help
 	exit 1
 fi
 
-if [ -z "$2" ];
+if [ -z "${2}" ];
 then
 	show_help
 	exit 1
@@ -28,22 +28,22 @@ total=$(ffprobe -v 0 -show_entries format=duration -of compact=p=0:nk=1 "${1}")
 echo "Total duration of audio clip: $total seconds"
 
 trim=$2
-filename="$(basename $1)"
+filename="$(basename "${1}")"
 extension="${filename##*.}"
 
 tmp_dir=$(mktemp -d)
 mkdir -p "${tmp_dir}"
 tmp_file="${tmp_dir}/file.${extension}"
 
-if [ $trim -lt 0 ];
+if [ "${trim}" -lt 0 ];
 then
 	# Trim off the last X seconds.
 	duration=$(echo "$total + $trim" | bc)
-	ffmpeg -i "${1}" -t $duration -acodec copy -vcodec copy "${tmp_file}"
+	ffmpeg -i "${1}" -t "${duration}" -acodec copy -vcodec copy "${tmp_file}"
 else
 	# Trim off the first X seconds.
 	seek_position=$trim
-	ffmpeg -i "${1}" -ss $seek_position -acodec copy -vcodec copy "${tmp_file}"
+	ffmpeg -i "${1}" -ss "${seek_position}" -acodec copy -vcodec copy "${tmp_file}"
 fi
 
 mv "${tmp_file}" "${1}"

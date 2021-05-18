@@ -65,4 +65,3 @@ mv "${tmp_file}" "${file}"
 # Maintain the orientation as EXIF data
 echo "exif update:"
 exiftool -overwrite_original -Orientation="${orientation}" -n "${file}"
-

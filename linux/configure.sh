@@ -205,7 +205,8 @@ _apps()
 		jq expect ack tmux screen \
 		alsa-firmware alsa-plugins alsa-utils pulseaudio pavucontrol \
 		memtest86+ \
-		xorg xorg-server xf86-video-intel xorg-xinit xterm lxterminal numlockx gnome-keyring openbox obconf xcompmgr tint2 thunar thunar-archive-plugin file-roller tumbler ffmpegthumbnailer feh gpicview gthumb xscreensaver xbindkeys xdotool noto-fonts noto-fonts-emoji ttf-dejavu i3 dmenu xautolock
+		xorg xorg-server xf86-video-intel xorg-xinit xterm lxterminal numlockx gnome-keyring xcompmgr thunar thunar-archive-plugin file-roller tumbler ffmpegthumbnailer feh gpicview gthumb xbindkeys xdotool noto-fonts noto-fonts-emoji ttf-dejavu i3 dmenu xautolock alacritty \
+		discord
 
 	# Needed for Dropbox for the time being
 	su - aur-user -c "
@@ -225,19 +226,19 @@ _apps()
 	systemctl enable docker
 }
 
-# AKA Synergy
-_barrier()
+_zfs()
 {
-	pacman -Syyu --noconfirm --needed \
-		barrier
+	su - aur-user -c "
+		yay -Syyu --noconfirm --needed \
+			zfs-linux
+	"
 
-	# Barrier/Synergy
-	ufw allow 24800
+	echo "zfs" >> /etc/modules-load.d/zfs.conf
 
-	mkdir -p /home/will/.barrier/SSL/Fingerprints
-	openssl req -x509 -nodes -days 365 -subj /CN=Barrier -newkey rsa:4096 -keyout /home/will/.barrier/SSL/Barrier.pem -out /home/will/.barrier/SSL/Barrier.pem
-	openssl x509 -fingerprint -sha1 -noout -in /home/will/.barrier/SSL/Barrier.pem > /home/will/.barrier/SSL/Fingerprints/Local.txt
-	sed -e "s/.*=//" -i /home/will/.barrier/SSL/Fingerprints/Local.txt
+	systemctl enable zfs-import-cache
+	systemctl enable zfs-import.target
+	systemctl enable zfs-mount
+	systemctl enable zfs.target
 }
 
 _wifi()
@@ -253,7 +254,7 @@ _wifi()
 
 _user()
 {
-	useradd -m -s /bin/bash $1 || true
+	useradd -m -s /bin/zsh $1 || true
 	usermod -a -G sshusers $1 || true
 	usermod -a -G sudo $1 || true
 	usermod -a -G vboxusers $1 || true
@@ -289,19 +290,6 @@ EOF
 #_apps
 #_user "${1}"
 #_wifi
-
-# commands are ordered so that vital systems run first
-# aur is often needed by others, so run that first. Same for
-# video being before nvidia, etc.
-commands=( _sudo _locale _init _aur _apps _audio _bluetooth _firewall _kvm _video _nvidia _sshd _wifi _barrier)
-for command in "${commands[@]}"
-do
-	for arg in "$@"
-	do
-		if [ "_${arg}" = "${command}" ];
-		then
-			echo "executing: ${arg}"
-			${command}
-		fi
-	done
-done
+#_zfs
+#_nvidia
+#_bluetooth

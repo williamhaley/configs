@@ -35,4 +35,3 @@ fi
 
 set -x
 ffmpeg -i "${file}" -vf "${vf}" "${file}"
-

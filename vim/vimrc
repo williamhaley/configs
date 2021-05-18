@@ -4,6 +4,9 @@ syntax on
 " Plugins
 filetype plugin indent on
 
+" https://vi.stackexchange.com/a/2163
+set backspace=indent,eol,start
+
 " Light theme
 set t_Co=256
 set background=dark

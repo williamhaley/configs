@@ -11,4 +11,3 @@ then
     echo "WSL"
     "/mnt/c/Users/will/AppData/Local/Programs/Microsoft VS Code/bin/code" $@
 fi
-

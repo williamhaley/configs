@@ -3,4 +3,3 @@
 xautolock \
     -time 1 \
     -locker "i3lock -d -c 000000"
-

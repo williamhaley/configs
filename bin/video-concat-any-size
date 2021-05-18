@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+
+tmp=`mktemp -d`
+
+count=0
+
+outputs=""
+
+# The paths must be absolute for the videos we combine
+for file in "$@"
+do
+  out="${tmp}/${count}.mp4"
+  ffmpeg \
+    -i "${file}" \
+    -vcodec libx264 \
+    -acodec aac \
+    -vf 'scale=1280:720:force_original_aspect_ratio=1,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p' \
+    -r 30 \
+    -b:v 1200K \
+    -ac 2 -ar 48000 \
+    -video_track_timescale 90000 \
+    "${out}"
+  count=$((count+1))
+  outputs="${outputs} ${out}"
+done
+
+video-concat ${outputs}
+

@@ -61,3 +61,17 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /f /v Defau
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /f /v DefaultPassword /t REG_SZ /d "%_PASSWORD%"
 ```
 
+WinPE
+
+```
+https://technet.microsoft.com/en-us/library/dn293200.aspx
+
+Install Windows PE to a DVD, a CD, or an ISO file
+
+Click Start, and type deployment. Right-click Deployment and Imaging Tools Environment and then select Run as administrator.
+Create a working copy of the Windows PE files. Specify either x86 or amd64:
+copype amd64 C:\WinPE_amd64
+Create an ISO file containing the Windows PE files:
+MakeWinPEMedia /ISO C:\WinPE_amd64 C:\WinPE_amd64\WinPE_amd64.iso
+To burn a DVD or CD: In Windows Explorer, right-click the ISO file, and select Burn disc image > Burn, and follow the prompts.
+```

@@ -67,8 +67,9 @@ git clone https://github.com/Valloric/YouCompleteMe ~/.vim/pack/plugins/start/yo
 # https://github.com/Valloric/YouCompleteMe#installation
 (
 	cd ~/.vim/pack/plugins/start/youcompleteme &&
+	echo "system" > .python-version &&
 	git submodule update --init --recursive &&
-	./install.py --go-completer
+	./install.py --all
 )
 ```
 
