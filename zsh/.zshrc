@@ -1,3 +1,27 @@
+eval `ssh-agent -s`
+
+# Load Git completion
+zstyle ':completion:*:*:git:*' script $CONFIGS_DIR/zsh/git-completion.zsh
+autoload -Uz compinit && compinit -d $HOME/.zcompdump
+
+# Custom script from a random internet user, but I like it
+source ${CONFIGS_DIR}/zsh/zsh-git-prompt.sh
+PROMPT='%m%~%b $(git_super_status) %# '
+
+# ctrl + k, ctrl + a, etc., have issues in tmux with zsh. Fix it.
+bindkey -e
+
+export HISTTIMEFORMAT="[%F %T] "
+export SAVEHIST=100000000
+export HISTFILE=$HOME/.zsh_history
+export HISTFILESIZE=1000000000
+export HISTSIZE=1000000000
+setopt INC_APPEND_HISTORY
+setopt EXTENDED_HISTORY
+setopt SHARE_HISTORY
+
+source $HOME/.zshrc
+
 # Append system paths to end of $PATH
 PATH=$PATH:/opt/bin
 PATH=$PATH:/opt/local/bin
@@ -46,34 +70,3 @@ else
 	export IS_MAC=true
 fi
 
-# Functions
-
-# This *must* be a function. It cannot be in a script.
-# Recommended by direnv author to properly cd with direnv in shell scripts.
-# https://github.com/direnv/direnv/issues/262
-direnv_cd() {
-	cd "$1"
-	eval "$(direnv export bash)"
-}
-
-# Load Git completion
-zstyle ':completion:*:*:git:*' script $CONFIGS_DIR/zsh/git-completion.zsh
-autoload -Uz compinit && compinit
-
-# Custom script from a random internet user, but I like it
-source ${CONFIGS_DIR}/zsh/zsh-git-prompt.sh
-PROMPT='%m%~%b $(git_super_status) %# '
-
-# ctrl + k, ctrl + a, etc., have issues in tmux with zsh. Fix it.
-bindkey -e
-
-export EDITOR=vim
-
-export HISTFILE=$HOME/.zsh_history
-SAVEHIST=100000000
-export HISTFILESIZE=1000000000
-export HISTSIZE=1000000000
-setopt INC_APPEND_HISTORY
-export HISTTIMEFORMAT="[%F %T] "
-setopt EXTENDED_HISTORY
-setopt SHARE_HISTORY

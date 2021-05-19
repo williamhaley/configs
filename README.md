@@ -8,15 +8,10 @@ Various application config files can be copied manually as needed.
 
 Clone the repo to `$HOME` using the SSH clone URL.
 
-Clobber `.zshrc` with this (replace zsh with bash where needed). On macOS for bash use `.bash_profile`.
+Link to the `zshenv` file.
 
-```
-#
-# ~/.zshrc
-#
-
-export CONFIGS_DIR=$HOME/configs
-source $CONFIGS_DIR/zsh/zshrc
+```bash
+ln -s $HOME/configs/zsh/.zshenv $HOME/
 ```
 
 Run this to set up aliases, symlinks, copy config files into place, etc.
