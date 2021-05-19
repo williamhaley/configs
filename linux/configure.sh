@@ -44,15 +44,10 @@ EOF
 
 _firewall()
 {
-	pacman -S --noconfirm --needed ufw
+	pacman -S --noconfirm --needed firewalld
 
-	# ufw
-	ufw --force disable
-	ufw --force reset
-	ufw --force default deny
-	systemctl enable ufw
-	systemctl start ufw
-	ufw --force enable
+	systemctl enable firewalld
+	systemctl start firewalld
 }
 
 _touchpad()
@@ -144,29 +139,17 @@ _sshd()
 		openssh
 
 	groupadd sshusers || true
-	ufw allow 22
+	firewall-cmd --zone=public --add-service=ssh --permanent
 
 	cat <<'EOF' >/etc/ssh/sshd_config
-PermitRootLogin				 no
-
-UsePAM						  yes
-PrintMotd					   no
-
-ClientAliveInterval			 0
-ClientAliveCountMax			 0
-
-AuthorizedKeysFile			  /home/%u/.ssh/authorized_keys
-
+PermitRootLogin no
+AuthorizedKeysFile .ssh/authorized_keys
+PasswordAuthentication no
 ChallengeResponseAuthentication no
-PasswordAuthentication		  yes
-PermitEmptyPasswords			no
-
-UsePrivilegeSeparation		  sandbox
-StrictModes					 yes
-
-Subsystem					   sftp	internal-sftp
-
-AllowGroups					 sshusers
+UsePAM yes
+AllowGroups sshusers
+PrintMotd no # pam does that
+Subsystem	sftp	/usr/lib/ssh/sftp-server
 EOF
 
 	chmod 644 /etc/ssh/sshd_config
@@ -183,6 +166,11 @@ _bluetooth()
 	pacman -Syyu --needed --noconfirm \
 		bluez bluez-utils
 
+	cat <<EOF > /etc/bluetooth/main.conf
+[Policy]
+AutoEnable=true
+EOF
+
 	systemctl start bluetooth
 	systemctl enable bluetooth
 }
@@ -193,7 +181,7 @@ _apps()
 		sudo openssh \
 		firefox chromium \
 		ntfs-3g exfat-utils mtools syslinux dosfstools \
-		zsh gvim geany base-devel git linux-headers go docker docker-compose \
+		zsh gvim geany base-devel git linux-headers go docker docker-compose python-pre-commit \
 		keepassxc \
 		wget curl rclone rsync unzip \
 		net-tools tcpdump wireshark-cli nmap \
@@ -203,7 +191,7 @@ _apps()
 		handbrake handbrake-cli libdvdcss dvdbackup cdrkit \
 		vlc cmus mplayer xfburn gst-plugins-good gst-plugins-base gst-plugins-bad gst-plugins-ugly \
 		jq expect ack tmux screen \
-		alsa-firmware alsa-plugins alsa-utils pulseaudio pavucontrol \
+		alsa-firmware alsa-plugins alsa-utils pipewire-pulse pavucontrol pipewire-media-session \
 		memtest86+ \
 		xorg xorg-server xf86-video-intel xorg-xinit xterm lxterminal numlockx gnome-keyring xcompmgr thunar thunar-archive-plugin file-roller tumbler ffmpegthumbnailer feh gpicview gthumb xbindkeys xdotool noto-fonts noto-fonts-emoji ttf-dejavu i3 dmenu xautolock alacritty \
 		discord
@@ -219,8 +207,12 @@ _apps()
 		yay -Syyu --noconfirm --needed \
 			visual-studio-code-bin \
 			dropbox \
-			git-lfs
+			git-lfs \
+			slack-desktop
 	"
+
+	# TODO Run as user
+	# systemctl --user enable pipewire pipewire-pulse pipewire-media-session
 
 	systemctl start docker
 	systemctl enable docker
@@ -288,6 +280,7 @@ EOF
 #_firewall
 #_aur
 #_apps
+#_sshd
 #_user "${1}"
 #_wifi
 #_zfs

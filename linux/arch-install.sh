@@ -7,8 +7,9 @@ locale_gen="en_US.UTF-8 UTF-8"
 locale_conf="LANG=en_US.UTF-8"
 timezone="/usr/share/zoneinfo/US/Central"
 applications="bash-completion git iw wpa_supplicant openssh memtest86+ dhcpcd netctl dialog nano"
-mirror='http://mirror.us.leaseweb.net/archlinux/$repo/os/$arch'
+mirror='https://mirrors.kernel.org/archlinux/$repo/os/$arch'
 arch_hostname="archlinux"
+arch_hostdomain="localdomain"
 root_format="ext4"
 hooks="base udev autodetect modconf block encrypt filesystems keyboard fsck"
 
@@ -233,7 +234,14 @@ sed -i -e "s|^HOOKS=.*|HOOKS=\(${hooks}\)|" /mnt/etc/mkinitcpio.conf
 sed -i -e "s|^MODULES=.*|MODULES=\(${modules}\)|" /mnt/etc/mkinitcpio.conf
 
 # Hostname.
-arch-chroot /mnt /bin/bash -c "echo '$arch_hostname' > /etc/hostname"
+arch-chroot /mnt /bin/bash -c "hostnamectl set-hostname ${arch_hostname}"
+cat << EOF > /mnt/etc/hosts
+# Static table lookup for hostnames.
+# See hosts(5) for details.
+127.0.0.1        ${arch_hostname}
+::1              ${arch_hostname}
+127.0.1.1        ${arch_hostname}.${arch_hostdomain}    ${arch_hostname}
+EOF
 
 # Timezone.
 arch-chroot /mnt ln -sf ${timezone} /etc/localtime
@@ -243,6 +251,8 @@ arch-chroot /mnt /bin/bash -c "pacman -S --noconfirm ${applications}"
 
 # Enable DHCP.
 arch-chroot /mnt systemctl enable dhcpcd
+# Send the hostname when registering with DHCP.
+echo "hostname" >> /mnt/etc/dhcpcd.conf
 
 # Locale.
 echo "${locale_gen}" > /mnt/etc/locale.gen
@@ -258,20 +268,13 @@ arch-chroot /mnt groupadd sudo
 arch-chroot /mnt chmod 440 /etc/sudoers
 
 # Add initial user.
-arch-chroot /mnt useradd -m -s /bin/bash -G sudo ${username}
+arch-chroot /mnt useradd -m -s /bin/zsh -G sudo ${username}
 
 # Blank out the root password. Sudo will be the only way to get root access!!!
 arch-chroot /mnt passwd -l root
 
-# Firewall will deny everything by default.
-arch-chroot /mnt pacman -S --noconfirm ufw
-arch-chroot /mnt ufw default deny
-# This enables the service, but does *not* enable ufw. Only `ufw enable` will
-# do that, and it cannot be done in chroot.
-arch-chroot /mnt systemctl enable ufw
-mkdir -p /mnt/etc/ufw
-echo "ENABLED=yes" > /mnt/etc/ufw/ufw.conf
-echo "LOGLEVEL=low" >> /mnt/etc/ufw/ufw.conf
+arch-chroot /mnt pacman -S --noconfirm firewalld
+arch-chroot /mnt systemctl enable firewalld
 
 ##################
 # 5. Boot Loader #
