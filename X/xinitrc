@@ -5,6 +5,10 @@ then
 	dropbox &
 fi
 
+export PROTON_USE_WINED3D=1
+
+background -f ${HOME}/img/fangorn.jpg
+
 VBoxClient-all &
 xmodmap ~/.Xmodmap
 xbindkeys -p &
