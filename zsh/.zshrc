@@ -1,5 +1,3 @@
-eval `ssh-agent -s`
-
 # Load Git completion
 zstyle ':completion:*:*:git:*' script $CONFIGS_DIR/zsh/git-completion.zsh
 autoload -Uz compinit && compinit -d $HOME/.zcompdump
