@@ -17,7 +17,7 @@ _sudo()
 	pacman -Syyu --noconfirm --needed sudo
 
 	cat <<'EOF' > /etc/sudoers
-root	ALL=(ALL) ALL
+root    ALL=(ALL) ALL
 %sudo   ALL=(ALL) ALL
 
 #includedir /etc/sudoers.d
@@ -222,7 +222,7 @@ _zfs()
 {
 	su - aur-user -c "
 		yay -Syyu --noconfirm --needed \
-			zfs-linux
+			zfs-dkms
 	"
 
 	echo "zfs" >> /etc/modules-load.d/zfs.conf
