@@ -39,5 +39,8 @@
 			}
 	},
 	"terminal.integrated.shell.osx": "/bin/zsh",
-	"go.toolsManagement.autoUpdate": true
+	"go.toolsManagement.autoUpdate": true,
+	"workbench.editorAssociations": {
+		"*.ipynb": "jupyter.notebook.ipynb"
+	}
 }
