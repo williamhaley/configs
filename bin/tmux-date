@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "$(date "+%b %d") / $(date "+%I:%M %p") / $(date -u "+%H:%M UTC")"
+

@@ -1,0 +1,6 @@
+export TERM=xterm-256color
+export EDITOR=vim
+export SUDO_EDITOR=vim
+export BROWSER=firefox
+export GOBIN="${HOME}/bin"
+export PATH="${HOME}/src/configs/bin":"${PATH}"

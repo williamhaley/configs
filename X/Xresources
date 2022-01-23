@@ -1,0 +1,12 @@
+! Load on X start with `xrdb ~/ThisFile`
+
+xterm*background: black
+xterm*foreground: lightgray
+
+!xterm*faceName: monospace:pixelsize=16
+xterm*faceName: incoslata:pixelsize=16
+
+! ctrl + shift + (c|v) copy and paste
+xterm*VT100.Translations: #override \
+                 Ctrl Shift <Key>V:    insert-selection(CLIPBOARD) \n\
+                 Ctrl Shift <Key>C:    copy-selection(CLIPBOARD)

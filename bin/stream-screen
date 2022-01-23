@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Stream the desktop (with audio) from Linux over HTTP, RTSP, or another
+# supported protocol.
+#
+# For now the only easy way to open this is with VLC. Just open the network
+# stream from there on the client machine using the http://wherever:port. Seems
+# like the muxing results in an MPEG2-TS stream, which maybe is not easy to
+# read in HTTP web clients.
+
+# https://superuser.com/questions/335885/stream-desktop-using-vlc
+# https://www.youtube.com/watch?v=CxbPhDv9xds
+
+# # Change to alsa:// (or whatever is appropriate) if not using pulse audio.
+# cvlc \
+#     screen:// \
+#     :screen-fps=30 \
+#     :input-slave=pulse:// \
+#     --sout "#transcode{acodec=mp3,vcodec=h264,vb=4096,acodec=mpga,ab=256,scale=0.5}:standard{access=http,mux=ts,dst=0.0.0.0:8000}"
+
+# When opening the stream it's import to have the trailing slash. So something
+# like rtsp://the.ip.address.here:8000/
+cvlc \
+    screen:// \
+    :screen-fps=30 \
+    :input-slave=pulse:// \
+    --sout "#transcode{vcodec=x264,vb=1024,venc:{ffmpeg:{keyint=2,btframes=2}},acodec=mpga,ab=128,scale=0.5}:rtp{mux=ps,dst=0.0.0.0,port=8001,sdp=rtsp://0.0.0.0:8000}"

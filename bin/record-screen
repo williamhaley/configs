@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+file="screen-$(date +%Y-%m-%dT%H.%M.%S).mp4"
+
+echo "waiting three seconds..."
+
+sleep 3
+
+cvlc \
+    screen:// \
+    :screen-fps=30 \
+    :input-slave=pulse:// \
+    --sout "#transcode{acodec=mp3,vcodec=h264,vb=4096,acodec=mpga,ab=256,scale=1}:file{dst="${file}",no-overwrite}"

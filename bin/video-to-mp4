@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+source="${1}"
+filename=$(basename -- "${source}")
+filename="${filename%.*}"
+
+ffmpeg -i "${source}" -vcodec libx265 -acodec copy "${filename}.mp4"

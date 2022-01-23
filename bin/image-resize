@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -e
+
+width=-1
+height=-1
+ratio=1
+file=""
+compression=2 # 31 is worst quality. 10 seems decent for web images, but will vary
+
+while getopts "w:f:h:r:c:" opt;
+do
+  case ${opt} in
+    w)
+      width=$OPTARG
+      ;;
+    h)
+      height=$OPTARG
+      ;;
+    r)
+      ratio=$OPTARG
+      ;;
+    f)
+      file=$OPTARG
+      ;;
+    c)
+      compression=$OPTARG
+      ;;
+  esac
+done
+shift $((OPTIND -1))
+
+if [ -z "$file" ];
+then
+    echo "must specify file with -f"
+    exit 1
+fi
+
+vf=""
+if [ "$ratio" != "1" ];
+then
+    vf="scale=iw*${ratio}:ih*${ratio}"
+else
+    vf="scale=${width}:${height}"
+fi
+
+filename=$(basename "${file}")
+extension="${filename##*.}"
+tmp_dir=$(mktemp -d)
+mkdir -p "${tmp_dir}"
+tmp_file="${tmp_dir}/file.${extension}"
+
+# We could auto-rotate, but that seems beyond the scope of this script
+orientation="$(exiftool -Orientation -b "${file}")"
+
+ffmpeg \
+	-loglevel panic \
+	-noautorotate \
+	-i "${file}" \
+	-qscale:v "${compression}" \
+	-vf "${vf}" \
+	"${tmp_file}" -y && \
+mv "${tmp_file}" "${file}"
+
+# Maintain the orientation as EXIF data
+echo "exif update:"
+exiftool -overwrite_original -Orientation="${orientation}" -n "${file}"
