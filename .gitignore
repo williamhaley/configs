@@ -1,0 +1,6 @@
+__pycache__
+.envrc
+.DS_Store
+.zsh_sessions
+node_modules
+

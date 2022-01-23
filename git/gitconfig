@@ -1,0 +1,60 @@
+[user]
+	email = williamhaley@users.noreply.github.com
+	name = Will
+
+[alias]
+	undorebase    = reset --hard ORIG_HEAD
+	list-authors  = "!f() { git log --all --format='%aN <%cE>' | sort -u; }; f"
+	set-name      = "!f() { git config --local user.name \"$@\"; }; f"
+	set-email     = "!f() { git config --local user.email \"$@\"; }; f"
+	upstream      = "!f() { BRANCH=$(git symbolic-ref --short -q HEAD); git branch --set-upstream-to=origin/$BRANCH $BRANCH; }; f"
+	hasstash      = "!f() { git stash show > /dev/null 2>&1 && true; }; f"
+	isrepo        = "!f() { [ -d '.git' ] || git rev-parse --git-dir > /dev/null 2>&1; }; f"
+	isclean       = "!f() { git isrepo && git status 2> /dev/null | tail -n1 | grep 'nothing to commit' > /dev/null 2>&1 && true; }; f"
+	isdirty       = "!f() { git isrepo && ! git isclean; }; f"
+	restore       = "!f() { git checkout $(git rev-list -n 1 HEAD -- \"$@\")^ -- \"$@\"; }; f"
+	# http://joey.aghion.com/find-the-github-pull-request-for-a-commit/
+	pullforsha    = "!f() { git log --merges --ancestry-path --oneline $1..master | grep 'pull request' | tail -n1 | awk '{print $5}' | cut -c2-; }; f"
+	lg            = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an - %cE>%Creset' --abbrev-commit
+	allbranches   = "!f() { for repo in `ls`; do (cd $repo && git isrepo && echo "$repo:" && git currentbranch && echo ""); done; }; f"
+	nuclear       = "!f() { \
+		git clean -ffdx && \
+		git submodule foreach --recursive git clean -xfd && \
+		git reset --hard && \
+		git submodule foreach --recursive git reset --hard && \
+		git submodule update --init --recursive ; \
+		git submodule update -f --recursive ; \
+	}; f"
+	currentbranch = rev-parse --abbrev-ref HEAD
+	tagdiff       = "!f() { git log $1..$2 --oneline; }; f"
+	wsdiff        = diff --ignore-space-at-eol -b -w --ignore-blank-lines
+
+[color]
+	ui = auto
+	diff = auto
+	interactive = auto
+	status = auto
+	branch = auto
+
+[core]
+	editor = vim
+	ignorecase = false
+
+[push]
+	default = current
+
+[pull]
+	default = current
+	prune = true
+	rebase = true
+
+[fetch]
+	prune = true
+
+[init]
+	defaultBranch = main
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

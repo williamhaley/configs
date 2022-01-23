@@ -1,0 +1,29 @@
+# xdg-utils
+# xdg-mime query filetype ~/some/file
+# File may be overwritten. *Should* be a symlink in ~/.config
+
+[Added Associations]
+application/pdf=firefox.desktop;
+audio/mp4=mpv.desktop;
+audio/mpeg=mpv.desktop;
+image/gif=images.desktop;
+image/jpeg=images.desktop;
+image/heic=images.desktop;
+image/png=images.desktop;
+image/webp=images.desktop;
+video/mkv=mpv.desktop;
+video/mkv=mpv.desktop
+video/mp4=mpv.desktop;
+video/mpeg=mpv.desktop;
+video/quicktime=mpv.desktop;
+
+[Default Applications]
+audio/mpeg=mpv.desktop;
+audio/x-m4a=mpv.desktop
+video/mp4=mpv.desktop
+video/x-matroska=mpv.desktop
+text/html=firefox.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
+x-scheme-handler/about=firefox.desktop
+x-scheme-handler/unknown=firefox.desktop

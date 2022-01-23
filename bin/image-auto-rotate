@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# Automatically rotate an image to the proper orientation while removing the EXIF orientation tag.
+#
+# Exif orientation is only removed if the value isn't 1 (upright/normal).
+#
+# Expects exiftool and imagemagick are installed.
+
+set -e
+
+verbose=0
+file=""
+
+while getopts "f:v" opt; do
+	case $opt in
+		f) file="${OPTARG}" ;;
+		v) verbose=1 ;;
+	esac
+done
+shift $((OPTIND -1))
+
+if [ -z "${file}" ];
+then
+	echo "${file}"
+	echo "Must specify filename with -f"
+	exit 1
+fi
+
+orientation="$(exiftool -Orientation -b "${file}")"
+
+if [ -n "${orientation}" ];
+then
+	if [ "${verbose}" -eq "1" ];
+	then
+		echo "Orientation for ${file} is ${orientation}"
+	fi
+
+	if [ "${orientation}" -eq "1" ];
+	then
+		echo "Nothing to change for ${file}"
+	else
+		value=0
+		case ${orientation} in
+			3) value=180 ;;
+			6) value=90 ;;
+			*)
+				echo "Unknown orientation ${orientation} for ${file}"
+				exit 1
+			;;
+		esac
+
+		echo "Rotating ${file} to ${value}"
+		mogrify -rotate ${value} "${file}"
+		exiftool -overwrite_original -Orientation= "${file}"
+	fi
+fi

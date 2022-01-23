@@ -1,0 +1,55 @@
+" Syntax highlighting
+syntax on
+
+" Plugins
+filetype plugin indent on
+
+" https://vi.stackexchange.com/a/2163
+set backspace=indent,eol,start
+
+" Don't force the creation of a final new line
+set nofixendofline
+
+" Light theme
+set t_Co=256
+set background=dark
+
+" Allow for transparency
+hi Normal guibg=NONE ctermbg=NONE
+
+" Transparent background behind line number column
+highlight clear LineNr
+
+" Show line numbers
+set number
+
+" How many columns constitute a tab
+set tabstop=4
+
+" How many spaces to use if we shift (indent or dedent) code
+set shiftwidth=4
+
+" Use spaces for tab
+set expandtab
+
+" Change line number highlight
+hi LineNr ctermfg=DarkMagenta
+
+" Only autocomplete for .go files
+" https://github.com/Valloric/YouCompleteMe#the-gycm_filetype_whitelist-option
+let g:ycm_filetype_whitelist = { 'go': 1 }
+
+" Spellcheck
+set spelllang=en
+set spell
+hi clear SpellBad
+hi SpellBad cterm=underline,bold
+
+" Force a tab character with Shift + Tab when needed
+inoremap <S-Tab> <C-V><Tab>
+
+" Show whitespace as certain characters
+:set listchars=eol:¬,tab:>·,trail:~,extends:>,precedes:<
+" To temporarily turn off use 'set nolist'
+:set list
+

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Start the screensaver/screen locker
+xautolock -time 5 -locker "/bin/i3lock" -detectsleep -secure -corners 0-00 -cornerdelay 3 -cornerredelay 20 &
+
+# Set up custom key modifiers (Caps Lock as ESC for example)
+xmodmap ~/.Xmodmap
+
+# Set up custom key bindings
+xbindkeys -p &
+
+numlockx &
+eval $(ssh-agent)
+xrdb ~/.Xresources
+
+feh --bg-center ~/src/configs/img/forest.jpg
+
+# For things like using the rpi-imager without root. Authentication agent for polkit
+/usr/bin/lxqt-policykit-agent &
+
+# Start udiskie for simpler USB storage device mounting
+udiskie -t &

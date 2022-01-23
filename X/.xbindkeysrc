@@ -1,0 +1,21 @@
+# ctrl + f to launch lxterminal
+#"lxterminal"
+#  c:41 + m:0x4
+
+# Normal multimedia buttons
+
+"xbacklight -inc 10"
+    XF86MonBrightnessUp
+
+"xbacklight -dec 10"
+    XF86MonBrightnessDown
+
+# Windows key to switch workspaces
+
+"xdotool set_desktop $((`xdotool get_desktop` - 1))"
+    m:0x40 + c:113
+    Mod4 + Left
+
+"xdotool set_desktop $((`xdotool get_desktop` + 1))"
+    m:0x40 + c:114
+    Mod4 + Right
