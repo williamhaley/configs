@@ -13,7 +13,6 @@ set nofixendofline
 " Light theme
 set t_Co=256
 set background=dark
-colorscheme PaperColor
 
 " Allow for transparency
 hi Normal guibg=NONE ctermbg=NONE

@@ -6,40 +6,21 @@
 
 - link:
     ~/.config/alacritty: alacritty
-    ~/.config/cmus/rc: cmus/rc
-    ~/.config/i3:
-      if: '[ `uname` = Linux ]'
-      path: i3
     ~/.gitconfig: git/gitconfig
-    ~/.oh-my-zsh/themes/will.zsh-theme: zsh/will.zsh-theme
     ~/.ssh/config: ssh/config
     ~/.tmux.conf: tmux/tmux.conf
-    ~/.vim/colors: vim/colors
     ~/.vimrc: vim/vimrc
     ~/.zshenv: zsh/zshenv
     ~/.zshrc: zsh/zshrc
     ~/.config/mimeapps.list:
       if: '[ `uname` = Linux ]'
       path: mimeapps.list
-      force: true
-    ~/.xbindkeysrc:
-      if: '[ `uname` = Linux ]'
-      path: X/xbindkeysrc
     ~/.Xmodmap:
       if: '[ `uname` = Linux ]'
       path: X/Xmodmap
-    ~/.xinitrc:
-      if: '[ `uname` = Linux ]'
-      path: X/xinitrc
-    ~/.xprofile:
-      if: '[ `uname` = Linux ]'
-      path: X/xprofile
     ~/.Xresources:
       if: '[ `uname` = Linux ]'
       path: X/Xresources
-    ~/.asoundrc:
-      if: '[ `uname` = Linux ]'
-      path: alsa/.asoundrc
 
 - create:
     ~/.ssh:
