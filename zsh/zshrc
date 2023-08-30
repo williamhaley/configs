@@ -64,7 +64,6 @@ then
     . "$HOME/.cargo/env"
 fi
 
-
 if command -v exa > /dev/null
 then
 	alias ls="exa -g"
@@ -98,7 +97,10 @@ zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
 export PATH="/Users/will.haley/.rd/bin:$PATH"
 
-eval "$(direnv hook zsh)"
+if command -v direnv > /dev/null
+then
+	eval "$(direnv hook zsh)"
+fi
 
 export GIT_PS1_SHOWUPSTREAM=1
 export GIT_PS1_SHOWDIRTYSTATE=1
@@ -106,7 +108,7 @@ export GIT_PS1_SHOWUNTRACKEDFILES=1
 export GIT_PS1_SHOWSTASHSTATE=1
 source ${HOME}/src/configs/zsh/git-prompt.sh
 
-precmd () { 
+precmd () {
 	__git_ps1 "%n" ":%~$ " " [%s]"
 }
 
@@ -118,3 +120,8 @@ PS1='%B%(?..[%?] )%b%n@%U%m%u>'
 # For a prompt on the right side of the page (which can make copying/pasting weird) try...
 # RPS1="%F{${1:-green}}%~%f"
 
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/will/google-cloud-sdk/path.zsh.inc' ]; then . '/home/will/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/will/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/will/google-cloud-sdk/completion.zsh.inc'; fi
