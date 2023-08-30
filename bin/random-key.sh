@@ -4,4 +4,5 @@
 size="${1:-32}"
 
 # Generate more data than we need since we'll trim the character set with tr
-dd if=/dev/urandom bs=512 count=24 2> /dev/null | tr -dc A-Z-a-z-0-9 | head -c ${size}
+dd if=/dev/urandom bs=512 count=24 2> /dev/null | LC_ALL=C tr -cd '[:alnum:]' | head -c 32
+

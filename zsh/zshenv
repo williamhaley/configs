@@ -4,4 +4,4 @@ export SUDO_EDITOR=vim
 export BROWSER=firefox
 export GOBIN="${HOME}/bin"
 export PATH="${HOME}/src/configs/bin":"${PATH}"
-. "$HOME/.cargo/env"
+

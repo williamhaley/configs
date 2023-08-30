@@ -8,6 +8,7 @@ export SAVEHIST=100000000
 export HISTFILE=$HOME/.zsh_history
 export HISTFILESIZE=1000000000
 export HISTSIZE=1000000000
+setopt histignorealldups sharehistory
 setopt INC_APPEND_HISTORY
 setopt EXTENDED_HISTORY
 setopt SHARE_HISTORY
@@ -57,7 +58,12 @@ then
 fi
 
 # Rustup/Rust/cargo
-PATH=$PATH:$HOME/.cargo/bin
+export PATH=$PATH:$HOME/.cargo/bin
+if [ -f "$HOME/.cargo/env" ]
+then
+    . "$HOME/.cargo/env"
+fi
+
 
 if command -v exa > /dev/null
 then
@@ -69,14 +75,6 @@ then
 	source "${HOME}/.zshrc.local"
 fi
 
-# Set up the prompt
-
-autoload -Uz promptinit
-promptinit
-prompt adam1
-
-setopt histignorealldups sharehistory
-
 # Use modern completion system
 autoload -Uz compinit
 compinit
@@ -86,7 +84,6 @@ zstyle ':completion:*' completer _expand _complete _correct _approximate
 zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' menu select=2
-eval "$(dircolors -b)"
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' list-colors ''
 zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
@@ -98,4 +95,26 @@ zstyle ':completion:*' verbose true
 
 zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+
+export PATH="/Users/will.haley/.rd/bin:$PATH"
+
+eval "$(direnv hook zsh)"
+
+export GIT_PS1_SHOWUPSTREAM=1
+export GIT_PS1_SHOWDIRTYSTATE=1
+export GIT_PS1_SHOWUNTRACKEDFILES=1
+export GIT_PS1_SHOWSTASHSTATE=1
+source ${HOME}/src/configs/zsh/git-prompt.sh
+
+precmd () { 
+	__git_ps1 "%n" ":%~$ " " [%s]"
+}
+
+# For a built-in prompt try...
+# autoload -Uz promptinit
+# promptinit
+# prompt adam1
+PS1='%B%(?..[%?] )%b%n@%U%m%u>'
+# For a prompt on the right side of the page (which can make copying/pasting weird) try...
+# RPS1="%F{${1:-green}}%~%f"
 
