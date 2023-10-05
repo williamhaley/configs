@@ -12,15 +12,6 @@
     ~/.vimrc: vim/vimrc
     ~/.zshenv: zsh/zshenv
     ~/.zshrc: zsh/zshrc
-    ~/.config/mimeapps.list:
-      if: '[ `uname` = Linux ]'
-      path: mimeapps.list
-    ~/.Xmodmap:
-      if: '[ `uname` = Linux ]'
-      path: X/Xmodmap
-    ~/.Xresources:
-      if: '[ `uname` = Linux ]'
-      path: X/Xresources
 
 - create:
     ~/.ssh:
