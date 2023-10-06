@@ -20,8 +20,16 @@ then
 fi
 
 disk="${1}"
-boot_partition="${disk}1"
-root_partition="${disk}2"
+
+# https://unix.stackexchange.com/a/500910/87765
+partition_separator=""
+if [[ ${disk:(-1)} =~ ^[0-9]$ ]]
+then
+	partition_separator="p"
+fi
+
+boot_partition="${disk}${partition_separator}1"
+root_partition="${disk}${partition_separator}2"
 encryption_password=${ENCRYPTION_PASSWORD:-""}
 root_password=${ROOT_PASSWORD:-password}
 
