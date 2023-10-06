@@ -3,6 +3,16 @@
 # Start the screensaver/screen locker
 xautolock -time 5 -locker "/bin/i3lock" -detectsleep -secure -corners 0-00 -cornerdelay 3 -cornerredelay 20 &
 
+# Set up custom key modifiers (Caps Lock as ESC for example)
+xmodmap ~/.Xmodmap
+
+# Set up custom key bindings
+xbindkeys -p &
+
+numlockx &
+eval $(ssh-agent)
+xrdb ~/.Xresources
+
 # Script that will automatically change the background image
 background.sh -l &
 

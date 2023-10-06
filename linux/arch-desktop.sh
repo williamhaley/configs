@@ -14,7 +14,7 @@ pacman --needed -Sy \
 	feh mpv libheif `# Multimedia` \
 	thunar thunar-archive-plugin file-roller tumbler ffmpegthumbnailer `# File viewers` \
 	xf86-video-vesa xorg-server xf86-video-intel xorg-xinit `# X11 drivers` \
-	xclip  xterm numlockx xcompmgr xbindkeys xdotool xautolock `# Core X11 utilities` \
+	xclip xterm numlockx xcompmgr xbindkeys xdotool xautolock xorg-xbacklight xorg-xmodmap `# Core X11 utilities` \
 	scrot `# Screenshotting` \
 	i3-wm i3status i3lock rofi `# Window manager and related utilties` \
 	udisks2 udiskie `# Media auto-mounting` \
@@ -25,11 +25,12 @@ pacman --needed -Sy \
 	zsh `# Next generation shell` \
 	ufw `# Firewall` \
 	ncdu `# Advanced disk-usage UI` \
-	linux-headers base-devel curl git docker sudo `# Development` \
+	linux-headers base-devel curl git docker sudo less `# Development` \
 	qemu-base tigervnc `# Virtual machines`
 
 systemctl enable ufw dhcpcd iwd ntpd lightdm
 ufw enable
+ufw default deny
 
 pushd "${script_dir}"
 	cp -a ./etc/skel/. /etc/skel/
