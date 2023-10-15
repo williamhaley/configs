@@ -19,14 +19,15 @@ pacman --needed -Sy \
 	i3-wm i3status i3lock rofi `# Window manager and related utilties` \
 	udisks2 udiskie `# Media auto-mounting` \
 	gnome-keyring seahorse `# GPG essentials for a desktop environment` \
-	jack2 alsa-utils `# Audio` \
+	jack2 alsa-utils alsa-firmware pipewire-alsa wireplumber lib32-pipewire pipewire-pulse `# Audio. Would be nice to not need pulse/pipewire, but last time troubleshooting an install I needed them for Firefox and even had to reinstall Firefox` \
 	alacritty `# Terminal` \
 	rsync `# File copying` \
 	zsh `# Next generation shell` \
 	ufw `# Firewall` \
 	ncdu `# Advanced disk-usage UI` \
 	linux-headers base-devel curl git docker sudo less `# Development` \
-	qemu-base tigervnc `# Virtual machines`
+	qemu-base tigervnc `# Virtual machines` \
+	man-db
 
 systemctl enable ufw dhcpcd iwd ntpd lightdm
 ufw enable
@@ -36,6 +37,8 @@ pushd "${script_dir}"
 	cp -a ./etc/skel/. /etc/skel/
 
 	install -Dm 0644 ./usr/share/applications/*.desktop /usr/share/applications
+
+	install -Dm 0644 ./etc/modprobe.d/blacklist.conf "/etc/modprobe.d/blacklist.conf"
 
 	install -Dm 0644 ./etc/ssh/sshd_config "/etc/ssh/sshd_config"
 
