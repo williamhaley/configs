@@ -6,6 +6,13 @@ set -e
 
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+cat << EOF >> /etc/pacman.conf
+
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+
+EOF
+
 pacman --needed -Sy \
 	firefox chromium `# Browsers` \
 	lightdm lightdm-gtk-greeter `# Display manager` \
