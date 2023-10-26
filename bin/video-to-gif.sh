@@ -3,8 +3,8 @@
 # Use -d as a portable flag across Unix/Linux
 dir=$(mktemp -d)
 
-width=640
-fps=15
+width=720
+fps=20
 
 ffmpeg \
 	-i "${1}" \
