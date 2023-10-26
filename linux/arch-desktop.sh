@@ -32,7 +32,7 @@ pacman --needed -Sy \
 	zsh `# Next generation shell` \
 	ufw `# Firewall` \
 	ncdu `# Advanced disk-usage UI` \
-	linux-headers base-devel curl git docker sudo less `# Development` \
+	linux-headers base-devel curl git docker docker-compose docker-buildx sudo less `# Development` \
 	qemu-base tigervnc `# Virtual machines` \
 	man-db tmux exa `# system utilities`
 
