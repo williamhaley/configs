@@ -34,7 +34,7 @@ pacman --needed -Sy \
 	ncdu `# Advanced disk-usage UI` \
 	linux-headers base-devel curl git docker sudo less `# Development` \
 	qemu-base tigervnc `# Virtual machines` \
-	man-db
+	man-db tmux exa `# system utilities`
 
 systemctl enable ufw dhcpcd iwd ntpd lightdm
 ufw enable
