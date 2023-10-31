@@ -33,8 +33,9 @@ pacman --needed -Sy \
 	ufw `# Firewall` \
 	ncdu `# Advanced disk-usage UI` \
 	linux-headers base-devel curl git docker docker-compose docker-buildx sudo less `# Development` \
-	qemu-base tigervnc `# Virtual machines` \
-	man-db tmux exa `# system utilities`
+	qemu-base tigervnc qemu-ui-gtk qemu-audio-pipewire `# Virtual machines` \
+	man-db tmux exa `# system utilities` \
+	red-notebook `# Journaling`
 
 systemctl enable ufw dhcpcd iwd ntpd lightdm
 ufw enable
