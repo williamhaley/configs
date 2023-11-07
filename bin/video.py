@@ -2,6 +2,7 @@
 
 import argparse
 import subprocess
+import sys
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(
@@ -22,6 +23,7 @@ if __name__ == "__main__":
 	parser.add_argument(
 		"--output", help="Path to output file", type=str, required=True
 	)
+	parser.add_argument("--verbose", help="Verbose output", action="store_true")
 
 	args = parser.parse_args()
 	command = ["ffmpeg", "-i", args.input]
@@ -35,10 +37,19 @@ if __name__ == "__main__":
 
 	# For now the only options do a copy and we're forcing an overwrite
 	command += ["-c", "copy"]
+
+	if not args.verbose:
+		# https://superuser.com/questions/326629/how-can-i-make-ffmpeg-be-quieter-less-verbose
+		command += ['-hide_banner', '-loglevel', 'error']
+
 	command += ["-y"]
 	command += [args.output]
 
-	# print(" ".join(command))
-	result = subprocess.run(command, stderr=subprocess.PIPE)
-	print(result.stderr.decode("utf-8"))
+	if args.verbose:
+		print(' '.join(command))
 
+	proc = subprocess.Popen(command, shell=False, stderr=subprocess.PIPE)
+	for line in proc.stderr:
+			print(line.decode('utf8'), end=''),
+	proc.stderr.close()
+	proc.wait()

@@ -13,8 +13,7 @@ numlockx &
 eval $(ssh-agent)
 xrdb ~/.Xresources
 
-# Script that will automatically change the background image
-background.sh -l &
+feh --bg-center ~/src/configs/img/forest.jpg
 
 # Start udiskie for simpler USB storage device mounting
 udiskie -t &
