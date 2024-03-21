@@ -19,7 +19,7 @@ pacman --needed -Sy \
 	noto-fonts noto-fonts-emoji ttf-dejavu `# Fonts` \
 	vim `# Text editing` \
 	feh mpv libheif `# Multimedia` \
-	thunar thunar-archive-plugin file-roller tumbler ffmpegthumbnailer `# File viewers` \
+	thunar thunar-archive-plugin file-roller tumbler ffmpegthumbnailer gvfs gvfs-mtp `# File viewers` \
 	xf86-video-vesa xorg-server xf86-video-intel xorg-xinit `# X11 drivers` \
 	xclip xterm numlockx xcompmgr xbindkeys xdotool xautolock xorg-xbacklight xorg-xmodmap `# Core X11 utilities` \
 	scrot `# Screenshotting` \
