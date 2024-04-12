@@ -26,6 +26,7 @@ pacman --needed -Sy \
 	i3-wm i3status i3lock rofi `# Window manager and related utilties` \
 	udisks2 udiskie `# Media auto-mounting` \
 	gnome-keyring seahorse `# GPG essentials for a desktop environment` \
+	lxqt-policykit `# GUI polkit authentication agent` \
 	jack2 alsa-utils alsa-firmware pipewire-alsa wireplumber lib32-pipewire pipewire-pulse `# Audio. Would be nice to not need pulse/pipewire, but last time troubleshooting an install I needed them for Firefox and even had to reinstall Firefox` \
 	alacritty `# Terminal` \
 	rsync `# File copying` \
@@ -35,7 +36,7 @@ pacman --needed -Sy \
 	linux-headers base-devel curl git docker docker-compose docker-buildx sudo less `# Development` \
 	qemu-base tigervnc qemu-ui-gtk qemu-audio-pipewire `# Virtual machines` \
 	man-db tmux exa `# system utilities` \
-	red-notebook `# Journaling`
+	rednotebook `# Journaling`
 
 systemctl enable ufw dhcpcd iwd ntpd lightdm
 ufw enable
@@ -66,5 +67,6 @@ groupadd sudo || true
 groupadd aur || true
 groupadd ssh || true
 
-useradd --create-home --shell /usr/bin/zsh -G audio,docker,aur,sudo,ssh will
+# Wheel is used by polkit at the least. Possibly by other frameworks and applications.
+useradd --create-home --shell /usr/bin/zsh -G audio,docker,aur,sudo,ssh,wheel will
 passwd will && passwd -l root

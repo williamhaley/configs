@@ -15,5 +15,8 @@ xrdb ~/.Xresources
 
 feh --bg-center ~/src/configs/img/forest.jpg
 
+# For things like using the rpi-imager without root. Authentication agent for polkit
+/usr/bin/lxqt-policykit-agent &
+
 # Start udiskie for simpler USB storage device mounting
 udiskie -t &
