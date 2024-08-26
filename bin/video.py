@@ -22,6 +22,15 @@ if __name__ == "__main__":
         "--remove-metadata", help="Remove metadata", action="store_true"
     )
     parser.add_argument(
+        "--remove-audio", help="Remove audio", action="store_true"
+    )
+    parser.add_argument(
+        "--dry-run", help="Print command without executing", action="store_true"
+    )
+    parser.add_argument(
+        "--speed", help="Speed up video by given factor", type=int, default=1
+    )
+    parser.add_argument(
         "--remux",
         help="Remux to another format by only copying a stream and not re-encoding",
         action="store_true",
@@ -41,24 +50,7 @@ if __name__ == "__main__":
         # https://video.stackexchange.com/a/32430
         # https://superuser.com/a/981931/770509
         # https://trac.ffmpeg.org/ticket/4498
-        fifos = [f"{mktemp()}.ts" for _ in range(len(args.input))]
-        for i, input in enumerate(args.input):
-            mkfifo(fifos[i])
-            subprocess.Popen([
-                "ffmpeg",
-                "-y",
-                "-i",
-                f"{input}",
-                "-c",
-                "copy",
-                "-bsf:v",
-                # This is specifically for hevc/h265 https://www.jeffgeerling.com/blog/2021/how-join-multiple-mp4-files-gopro-ffmpeg
-                "hevc_mp4toannexb",
-                "-f",
-                "mpegts",
-                fifos[i],
-            ], shell=False)
-
+        fifos = [f"{mktemp(dir='/home/will/Downloads')}.ts" for _ in range(len(args.input))]
         fifo_names = "|".join(fifos)
 
         command += ["-i", f"concat:{fifo_names}"]
@@ -82,16 +74,45 @@ if __name__ == "__main__":
     if args.remux:
         command += ["-map", "0"]
 
+    if args.remove_audio:
+        command += ["-an"]
+
+    if args.speed > 1:
+        command += ["-filter:v", f"setpts=PTS/{args.speed}"]
+
     if not args.verbose:
         # https://superuser.com/questions/326629/how-can-i-make-ffmpeg-be-quieter-less-verbose
         command += ["-hide_banner", "-loglevel", "error"]
 
-    command += ["-c", "copy"]
+    # Can't do a simple copy if we're applying a filter
+    if not args.speed >1:
+        command += ["-c", "copy"]
     command += ["-y"]
     command += [args.output]
 
-    if args.verbose:
+    if args.verbose or args.dry_run:
         print(" ".join(command))
+
+    if args.dry_run:
+        exit(0)
+
+    if len(args.input) > 1:
+        for i, input in enumerate(args.input):
+            mkfifo(fifos[i])
+            subprocess.Popen([
+                "ffmpeg",
+                "-y",
+                "-i",
+                f"{input}",
+                "-c",
+                "copy",
+                "-bsf:v",
+                # This is specifically for hevc/h265 https://www.jeffgeerling.com/blog/2021/how-join-multiple-mp4-files-gopro-ffmpeg
+                "hevc_mp4toannexb",
+                "-f",
+                "mpegts",
+                fifos[i],
+            ], shell=False)
 
     proc = subprocess.Popen(
         command, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE
