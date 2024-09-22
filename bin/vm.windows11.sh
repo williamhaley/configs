@@ -6,20 +6,142 @@
 
 set -e
 
-iommu-verify-on.sh
+usb_host_devices=('046d:c52b' '0a5c:21e8')
+pci_devices=('10de:1c03')
 
-iommu-verify-isolation-by-label.sh "NVIDIA Corporation GM206 [GeForce GTX 960] (rev a1)"
-iommu-verify-isolation-by-label.sh "NVIDIA Corporation GM206 High Definition Audio Controller (rev a1)"
+function verify_usb_device_permissions() {
+  for usb_host_device in "${usb_host_devices[@]}"
+  do
+    IFS=: read -r idVendor idProduct <<< "${usb_host_device}"
 
-# Using this to connect an Xbox controller. USB does not work. Must use Bluetooth.
-iommu-verify-usb-driver.sh "Broadcom Corp. BCM20702A0 Bluetooth 4.0"
-# TODO Someday try and get this working wired in!
-# iommu-verify-usb-driver.sh "Microsoft Corp. Xbox Wireless Controller (model 1914)"
+    for device in /sys/bus/usb/devices/*
+    do
+      if [ -f "${device}/idVendor" ] && [ -f "${device}/idProduct" ] && [ "$(< "${device}/idVendor")" = "${idVendor}" ] && [ "$(< "${device}/idProduct")" = "${idProduct}" ]
+      then
+        bus="$(printf "%03d" "$(cat "${device}/busnum")")"
+        dev="$(printf "%03d" "$(cat "${device}/devnum")")"
+
+        device_owner="$(stat -c '%U' "/dev/bus/usb/${bus}/${dev}")"
+        device_group="$(stat -c '%G' "/dev/bus/usb/${bus}/${dev}")"
+
+        if [ "${device_owner}" != "vfio" ] && [ "${device_group}" != "vfio" ]
+        then
+          echo "Problem with USB device: ${usb_host_device}: ${device_owner}:${device_group}"
+          echo "Run the setup function and reboot"
+          exit 1
+        fi
+      fi
+    done
+  done
+}
+
+function verify_pci_isolation() {
+  for pci_device in "${pci_devices[@]}"
+  do
+    for device in /sys/bus/pci/devices/*
+    do
+      IFS=: read -r idVendor idProduct <<< "${pci_device}"
+      if [ -f "${device}/vendor" ] && [ -f "${device}/device" ] && [ "$(< "${device}/vendor")" = "0x${idVendor}" ] && [ "$(< "${device}/device")" = "0x${idProduct}" ]
+      then
+        driver_path="$(readlink -f "${device}/driver")"
+        driver="$(basename "${driver_path}")"
+        
+        if [ "${driver}" != "vfio-pci" ]
+        then
+          echo "Problem with PCI device: ${pci_device}: ${device}"
+          echo "Run the setup function and reboot"
+          exit 1
+        fi
+      fi
+    done
+  done
+}
+
+function setup() {
+  # Set up permissions for non-root.
+  sudo groupadd vfio || true
+  sudo usermod -a -G vfio "${USER}"
+
+  sudo tee /etc/udev/rules.d/vfio.rules <<EOF
+# All stubbed vfio devices belong to the vfio group.
+SUBSYSTEMS=="vfio", GROUP="vfio"
+EOF
+  for usb_host_device in "${usb_host_devices[@]}"
+  do
+    IFS=: read -r idVendor idProduct <<< "${usb_host_device}"
+  sudo tee -a /etc/udev/rules.d/vfio.rules << EOF
+# USB Host device.
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="${idVendor}", ATTRS{idProduct}=="${idProduct}", GROUP="vfio", MODE="0666"
+EOF
+  done
+
+  joined="$(IFS=, ; echo "${pci_devices[*]}")"
+  sudo tee /etc/modprobe.d/vfio.conf > /dev/null << EOF
+softdep drm pre: vfio-pci
+
+# PCI devices.
+options vfio-pci ids=${joined}
+EOF
+
+  sudo mkdir -p /etc/security/limits.d
+  sudo tee /etc/security/limits.d/vfio.conf <<EOF
+@vfio soft memlock unlimited
+@vfio hard memlock unlimited
+EOF
+
+  sudo mkinitcpio -P
+
+  echo "reboot to apply changes"
+  echo "make sure these MODULES are set up in /etc/mkinitcpio.conf: vfio_pci vfio vfio_iommu_type1"
+  echo "make sure these HOOKS are set up in /etc/mkinitcpio.conf: modconf"
+}
+
+function debug() {
+  # Verifying that the configuration worked
+  # Reboot and verify that vfio-pci has loaded properly and that it is now bound to the right devices. 
+  sudo dmesg | grep -i vfio
+
+  # It is not necessary for all devices (or even expected device) from vfio.conf to be in dmesg output. Even if a device does not appear, it might still be visible and usable in the guest virtual machine. 
+  sudo lspci -nnk -d 10de:1c03
+  sudo lspci -nnk -d 10de:10f1
+}
+
+# setup
+# exit 1
+
+verify_usb_device_permissions
+verify_pci_isolation
 
 vm_root="/home/will/VMs/windows11"
 
 # Start up the fake software TPM device.
-swtpm socket --tpm2 -d --tpmstate dir=${vm_root}/tpm --ctrl type=unixio,path=${vm_root}/tpm/swtpm.sock --log level=20
+# swtpm socket --tpm2 -d --tpmstate dir=${vm_root}/tpm --ctrl type=unixio,path=${vm_root}/swtpm.sock --log level=20
+# `# TPM` \
+# -chardev socket,id=chrtpm,path=${vm_root}/swtpm.sock \
+# -tpmdev emulator,id=tpm0,chardev=chrtpm \
+# -device tpm-tis,tpmdev=tpm0 \
+
+usb_args=()
+for usb_host_device in "${usb_host_devices[@]}"
+do
+  IFS=: read -r idVendor idProduct <<< "${usb_host_device}"
+  usb_args+=("-usb -device usb-host,vendorid=0x${idVendor},productid=0x${idProduct}")
+done
+
+pci_args=()
+for pci_device in "${pci_devices[@]}"
+do
+  for device in /sys/bus/pci/devices/*
+  do
+    IFS=: read -r idVendor idProduct <<< "${pci_device}"
+    if [ -f "${device}/vendor" ] && [ -f "${device}/device" ] && [ "$(< "${device}/vendor")" = "0x${idVendor}" ] && [ "$(< "${device}/device")" = "0x${idProduct}" ]
+    then
+      pci_args+=("-device vfio-pci,host=$(basename "${device}")")
+    fi
+  done
+done
+
+set -x
 
 qemu-system-x86_64 \
   -enable-kvm \
@@ -29,10 +151,6 @@ qemu-system-x86_64 \
   -smbios type=2 \
   `# Memory` \
   -m 16G -mem-prealloc \
-  `# TPM` \
-  -chardev socket,id=chrtpm,path=${vm_root}/tpm/swtpm.sock \
-  -tpmdev emulator,id=tpm0,chardev=chrtpm \
-  -device tpm-tis,tpmdev=tpm0 \
   `# Wired virtual NIC` \
   -nic user,hostfwd=tcp::8000-:8000,smb=/home/will/Downloads \
   `# UEFI` \
@@ -42,16 +160,13 @@ qemu-system-x86_64 \
   -device ich9-ahci,id=sata \
     `# Specifically set serial/model numbers. Else, Windows 11 may do odd things during installation` \
     -device ide-hd,bus=sata.0,drive=sata0,serial=212611800050,model=WDS200T2B0B-00YS70 \
-    -drive id=sata0,if=none,file=${vm_root}/image/windows11.vmdk,format=vmdk \
+    -drive id=sata0,if=none,file=${vm_root}/windows11.qcow2,format=qcow2 \
   -device intel-iommu,caching-mode=on \
-  `# VFIO devices` \
-  -device vfio-pci,host="$(pci-address-by-label.sh "VGA compatible controller: NVIDIA Corporation GM206 [GeForce GTX 960] (rev a1)")" \
-  -device vfio-pci,host="$(pci-address-by-label.sh "Audio device: NVIDIA Corporation GM206 High Definition Audio Controller (rev a1)")" \
+  `# VFIO devices ` \
+  ${pci_args[@]} \
   `# Disable on-board integrated graphics for the VM` \
   -nographic -vga none \
   `# USB devices` \
-  -usb -device "usb-host,vendorid=0x046d,productid=0x0825" `# Logitech, Inc. Webcam C270` \
-  -usb -device "usb-host,vendorid=0x046d,productid=0xc52b" `# Logitech, Inc. Unifying Receiver` \
-  -usb -device "usb-host,vendorid=0x0a5c,productid=0x21e8" `# Broadcom Corp. BCM20702A0 Bluetooth 4.0` \
+  ${usb_args[@]} \
   `# Audio` \
-  -device ich9-intel-hda,addr=1f.1 -audiodev pa,id=snd0 -device hda-output,audiodev=snd0
+  -device ich9-intel-hda,addr=1f.1 -audiodev pipewire,id=snd0 -device hda-output,audiodev=snd0
