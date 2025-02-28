@@ -20,3 +20,5 @@ feh --bg-center ~/src/configs/img/forest.jpg
 
 # Start udiskie for simpler USB storage device mounting
 udiskie -t &
+
+picom -f &
