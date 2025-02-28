@@ -5,4 +5,4 @@
 set -e
 
 sudo pacman -Sy archlinux-keyring --needed
-sudo pacman -Syyu
+yay -Syyu
