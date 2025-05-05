@@ -16,10 +16,10 @@ then
 
   ln -sf "${script_dir}/i3" ~/.config/i3
 
-  ln -sf "${script_dir}/X/.xbindkeysrc" ~/.xbindkeysrc
-  ln -sf "${script_dir}/X/.Xmodmap" ~/.Xmodmap
-  ln -sf "${script_dir}/X/.xprofile" ~/.xprofile
-  ln -sf "${script_dir}/X/.Xresources" ~/.Xresources
+  #ln -sf "${script_dir}/X/.xbindkeysrc" ~/.xbindkeysrc
+  #ln -sf "${script_dir}/X/.Xmodmap" ~/.Xmodmap
+  #ln -sf "${script_dir}/X/.xprofile" ~/.xprofile
+  #ln -sf "${script_dir}/X/.Xresources" ~/.Xresources
 fi
 
 ln -sf "${script_dir}/alacritty" ~/.config/alacritty
