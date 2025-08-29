@@ -23,6 +23,7 @@ then
 fi
 
 ln -sf "${script_dir}/alacritty" ~/.config/alacritty
+ln -sf "${script_dir}/direnv" ~/.config/direnv
 ln -sf "${script_dir}/git/gitconfig" ~/.gitconfig
 ln -sf "${script_dir}/ssh/config" ~/.ssh/config
 ln -sf "${script_dir}/tmux/tmux.conf" ~/.tmux.conf
