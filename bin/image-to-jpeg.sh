@@ -4,5 +4,5 @@ set -e
 
 magick mogrify -monitor -format jpg "${1}"
 
-rm "${1}"
+mv "${1}" "${1}.original"
 

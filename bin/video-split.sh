@@ -19,6 +19,6 @@ filename="$(basename -- "${1}")"
 extension="${filename##*.}"
 filename="${filename%.*}"
 
-ffmpeg -y -i "${1}" -ss 0 -t "${2}" "${filename}.1.${extension}"
-ffmpeg -y -i "${1}" -ss "${2}" "${filename}.2.${extension}"
+ffmpeg -y -i "${1}" -ss 0 -t "${2}" -c copy "${filename}.1.${extension}"
+ffmpeg -y -i "${1}" -ss "${2}" -c copy "${filename}.2.${extension}"
 

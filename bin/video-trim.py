@@ -21,7 +21,8 @@ def trim(from_start, from_end, src_file):
 		body = []
 		# Using -vcodec copy is fast, but depending on the encoding, could result in missing frames in our copy of the
 		# video stream, and so blacked out video which is undesirable. This is slower, as we are re-encoding, but better.
-		tail = ['-acodec', 'copy', tmp_file_name]
+		#tail = ['-acodec', 'copy', tmp_file_name]
+		tail = ['-c', 'copy', tmp_file_name]
 
 		if from_start:
 			print(f'Trim {from_start} seconds from beginning')

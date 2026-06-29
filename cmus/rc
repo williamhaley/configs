@@ -2,3 +2,6 @@
 # set colorscheme zenburn
 
 colorscheme cyan
+
+set output_plugin=pulse
+

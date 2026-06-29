@@ -4,4 +4,5 @@ source="${1}"
 filename=$(basename -- "${source}")
 filename="${filename%.*}"
 
-ffmpeg -i "${source}" -vcodec libx265 -acodec copy "${filename}.mp4"
+ffmpeg -i "${source}" -vcodec copy -acodec aac "${filename}.mp4"
+
