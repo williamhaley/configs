@@ -6,3 +6,4 @@ export GOBIN="${HOME}/bin"
 export PATH="${HOME}/src/configs/bin":"${PATH}"
 # GPG git password prompt
 export GPG_TTY=$(tty)
+. "$HOME/.cargo/env"

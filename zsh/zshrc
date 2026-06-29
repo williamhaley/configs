@@ -21,11 +21,15 @@ PATH=$PATH:/sbin
 PATH=$PATH:/usr/local/bin
 
 # Prepend trusted user paths to start of $PATH
+PATH=/usr/local/bin:$PATH
 PATH=$HOME/bin:$PATH
 PATH=$HOME/.local/bin:$PATH
 
 # Append untrusted paths to the end of $PATH
 PATH=$PATH:$HOME/.yarn/bin
+
+# kubectl krew plugin manager
+PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 # Go
 PATH=$HOME/src/go/bin:$PATH
@@ -63,6 +67,10 @@ if [ -f "$HOME/.cargo/env" ]
 then
     . "$HOME/.cargo/env"
 fi
+
+# Swift
+export SWIFT_HOME="${HOME}/.local/share/swiftly"
+export PATH=${PATH}:${SWIFT_HOME}/bin
 
 if command -v exa > /dev/null
 then
@@ -133,3 +141,8 @@ fi
 
 alias yt-dlp='yt-dlp --write-sub --write-auto-sub --sub-lang "en.*"'
 
+
+[ -f "/home/will/.ghcup/env" ] && . "/home/will/.ghcup/env" # ghcup-env
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
