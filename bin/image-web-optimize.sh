@@ -20,4 +20,5 @@ fi
 
 image-auto-rotate -f "${file}"
 image-strip-metadata -f "${file}"
-image-resize -f "${file}" -w 800 -c 10
+image-resize -f "${file}" -w 1440 -c 20
+
