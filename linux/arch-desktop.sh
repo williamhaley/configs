@@ -24,6 +24,7 @@ pacman --needed -Sy \
 	xclip xterm numlockx xcompmgr xbindkeys xdotool xautolock xorg-xbacklight xorg-xmodmap `# Core X11 utilities` \
 	scrot `# Screenshotting` \
 	i3-wm i3status i3lock rofi `# Window manager and related utilties` \
+	picom `# compositor for i3, which gets us transparency` \
 	udisks2 udiskie `# Media auto-mounting` \
 	gnome-keyring seahorse `# GPG essentials for a desktop environment` \
 	lxqt-policykit `# GUI polkit authentication agent` \
