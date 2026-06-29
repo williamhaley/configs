@@ -40,7 +40,7 @@ export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 if command -v pyenv > /dev/null
 then
-	eval "$(pyenv init --path)"
+	eval "$(pyenv init - zsh)"
 fi
 
 # Ruby
@@ -109,7 +109,7 @@ export GIT_PS1_SHOWSTASHSTATE=1
 source ${HOME}/src/configs/zsh/git-prompt.sh
 
 precmd () {
-	__git_ps1 "%n" ":%~$ " " [%s]"
+	__git_ps1 "[%D{%Y-%m-%f}T%D{%H:%M:%S}]" ":%~$ " " [%s]"
 }
 
 # For a built-in prompt try...
