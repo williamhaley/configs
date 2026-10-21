@@ -4,6 +4,6 @@ export SUDO_EDITOR=vim
 export BROWSER=firefox
 export GOBIN="${HOME}/bin"
 export PATH="${HOME}/src/configs/bin":"${PATH}"
+[ -f "${HOME}/.cargo/env" ] && source "${HOME}/.cargo/env"
 # GPG git password prompt
 export GPG_TTY=$(tty)
-. "$HOME/.cargo/env"

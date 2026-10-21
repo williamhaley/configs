@@ -12,7 +12,10 @@ then
   # (deprecated) for backwards compatibility https://wiki.archlinux.org/title/XDG_MIME_Applications#mimeapps.list
   ln -sf "${script_dir}/X/mimeapps.list" ~/.local/share/applications/mimeapps.list:
 
-  ln -sf "${script_dir}/cmus/rc" ~/.config/cmus/rc
+  if [ -d "${HOME}/.config/cmus" ]
+  then
+    ln -sf "${script_dir}/cmus/rc" ~/.config/cmus/rc
+  fi
 
   ln -sf "${script_dir}/i3" ~/.config/i3
 
