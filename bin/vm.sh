@@ -1,19 +1,49 @@
 #!/usr/bin/env bash
 #
-# Windows 11 Qemu VM with direct PCI device passthrough for an NVIDIA GPU.
+# Windows 11 Qemu VM with direct PCI device passthrough for a physical GPU.
 #
 # Drivers may be found here https://github.com/virtio-win/virtio-win-pkg-scripts/blob/master/README.md
 
 set -e
 
-usb_host_devices=('046d:c52b' '0a5c:21e8')
-pci_devices=('10de:1c03')
+[ $EUID -eq 0 ] && echo "do not run as root" >&2 && exit 1
+
+# sudo udevadm control --reload-rules && sudo udevadm trigger
+
+vm_name="${1}"
+
+if [ -z "${vm_name}" ]
+then
+  echo "Pass a single arg. The name of the VM"
+  exit 1
+fi
+
+vm_root="${HOME}/VMs/${vm_name}"
+
+if [ ! -d "${vm_root}" ]
+then
+  echo "'${vm_root}' does not exist"
+  exit 1
+fi
+
+get_val()
+{
+  /home/will/go/bin/yq eval-all '. as $item ireduce ({}; . *+ $item )' /home/will/VMs/global.config.yaml "${vm_root}/config.yaml" | /home/will/go/bin/yq eval "${1}"
+}
+
+vars_source="$(get_val ".uefi.vars")"
+nvram_source="$(get_val ".uefi.nvram")"
+memory="$(get_val ".memory")"
+readarray -t pci_devices < <(get_val ".vfio.pci[].address")
+readarray -t usb_host_devices < <(get_val ".vfio.usb[].address")
+
+# cp "${vars_source}" "${vm_root}/vars.fd"
+# cp "${nvram_source}" "${vm_root}/nvram.fd"
 
 function verify_usb_device_permissions() {
   for usb_host_device in "${usb_host_devices[@]}"
   do
     IFS=: read -r idVendor idProduct <<< "${usb_host_device}"
-
     for device in /sys/bus/usb/devices/*
     do
       if [ -f "${device}/idVendor" ] && [ -f "${device}/idProduct" ] && [ "$(< "${device}/idVendor")" = "${idVendor}" ] && [ "$(< "${device}/idProduct")" = "${idProduct}" ]
@@ -38,14 +68,16 @@ function verify_usb_device_permissions() {
 function verify_pci_isolation() {
   for pci_device in "${pci_devices[@]}"
   do
+    verified=false
     for device in /sys/bus/pci/devices/*
     do
       IFS=: read -r idVendor idProduct <<< "${pci_device}"
       if [ -f "${device}/vendor" ] && [ -f "${device}/device" ] && [ "$(< "${device}/vendor")" = "0x${idVendor}" ] && [ "$(< "${device}/device")" = "0x${idProduct}" ]
       then
+        verified=true
         driver_path="$(readlink -f "${device}/driver")"
         driver="$(basename "${driver_path}")"
-        
+
         if [ "${driver}" != "vfio-pci" ]
         then
           echo "Problem with PCI device: ${pci_device}: ${device}"
@@ -54,6 +86,12 @@ function verify_pci_isolation() {
         fi
       fi
     done
+
+    if [ "${verified}" = "false" ]
+    then
+      echo "Problem with PCI device: ${pci_device}. Could not find it in /sys/bus/pci/devices"
+      exit 1
+    fi
   done
 }
 
@@ -112,8 +150,6 @@ function debug() {
 verify_usb_device_permissions
 verify_pci_isolation
 
-vm_root="/home/will/VMs/windows11"
-
 # Start up the fake software TPM device.
 # swtpm socket --tpm2 -d --tpmstate dir=${vm_root}/tpm --ctrl type=unixio,path=${vm_root}/swtpm.sock --log level=20
 # `# TPM` \
@@ -128,7 +164,12 @@ do
   usb_args+=("-usb -device usb-host,vendorid=0x${idVendor},productid=0x${idProduct}")
 done
 
-pci_args=()
+addr_index=0
+#pci_args=("-device pcie-root-port,id=root_port1,chassis=0,slot=0,bus=pcie.0")
+#pci_args=("-device pcie-root-port,id=root_port1,chassis=1,slot=1,bus=pcie.0,addr=01.0")
+#pci_args=()
+#pci_args=("-device pci-bridge,id=will_gpu_bridge,chassis_nr=1,bus=pcie.0,addr=1a.0")
+pci_args=("-device pcie-root-port,id=will_gpu_bridge,chassis=1,slot=1,bus=pcie.0,addr=1a.0")
 for pci_device in "${pci_devices[@]}"
 do
   for device in /sys/bus/pci/devices/*
@@ -136,7 +177,22 @@ do
     IFS=: read -r idVendor idProduct <<< "${pci_device}"
     if [ -f "${device}/vendor" ] && [ -f "${device}/device" ] && [ "$(< "${device}/vendor")" = "0x${idVendor}" ] && [ "$(< "${device}/device")" = "0x${idProduct}" ]
     then
-      pci_args+=("-device vfio-pci,host=$(basename "${device}")")
+      # pci_args+=("-device vfio-pci,host=$(basename "${device}"),id=hostdev${addr_index},bus=root_port1,addr=00.${addr_index}")
+      # pci_args+=("-device vfio-pci,host="$(basename "${device}")",bus=root_port1,addr=00.${addr_index}")
+      # pci_args+=("-device vfio-pci,host=$(basename "${device}"),bus=will_gpu_bridge,addr=00.${addr_index}")
+      pci_args+=("-device vfio-pci,host=$(basename "${device}"),bus=will_gpu_bridge,addr=00.${addr_index}")
+      if [ "${addr_index}" -eq 0 ]
+      then
+        pci_args[-1]+=",multifunction=on"
+      fi
+
+      addr_index=$((addr_index+1))
+
+      romfile="$(/home/will/go/bin/yq '.vfio.pci[] | select(.address == "'"${pci_device}"'") | .romfile // ""' "${vm_root}/config.yaml")"
+      if [ -n "${romfile}" ]
+      then
+        pci_args[-1]+=",multifunction=on,romfile=${romfile}"
+      fi
     fi
   done
 done
@@ -146,22 +202,25 @@ set -x
 qemu-system-x86_64 \
   -enable-kvm \
   -machine q35,accel=kvm \
-  -cpu EPYC,kvm=on \
-  -smp 16,cores=4,sockets=4 \
+  `# Passing the host CPU and specifying the Hyper-v enlightenments saw a big performance boost on Ryzen https://wiki.archlinux.org/title/QEMU#Improve_virtual_machine_performance` \
+  -cpu host,kvm=on,hv_relaxed,hv_spinlocks=0x1fff,hv_vapic,hv_time,hv_frequencies,hv_reset,hv_vpindex,hv_stimer,hv_synic,hv-vendor-id=AUTHENTICAMD \
+  -smp 6,sockets=1,cores=6,threads=1 \
   -smbios type=2 \
+  `# ISO/CD-ROM` \
+  -cdrom "${vm_root}/../virtio-win-0.1.302.iso" \
   `# Memory` \
-  -m 16G -mem-prealloc \
+  -m "${memory}" -mem-prealloc \
   `# Wired virtual NIC` \
-  -nic user,hostfwd=tcp::8000-:8000,smb=/home/will/Downloads \
+  `#-nic user,hostfwd=tcp::8000-:8000,smb=/home/will/Downloads` \
+  -netdev user,id=net0,smb=/home/will/Downloads -device virtio-net-pci,netdev=net0 \
   `# UEFI` \
-  -drive if=pflash,format=raw,readonly=on,file=${vm_root}/OVMF_CODE.secboot.fd `# From /usr/share/edk2-ovmf/x64/OVMF_CODE.secboot.fd` \
-  -drive if=pflash,format=raw,file=${vm_root}/nvram.fd `# From /usr/share/edk2-ovmf/x64/OVMF_VARS.fd` \
+  -drive if=pflash,format=raw,readonly=on,file=${vm_root}/vars.fd \
+  -drive if=pflash,format=raw,file=${vm_root}/nvram.fd \
   `# SATA Controller` \
   -device ich9-ahci,id=sata \
     `# Specifically set serial/model numbers. Else, Windows 11 may do odd things during installation` \
     -device ide-hd,bus=sata.0,drive=sata0,serial=212611800050,model=WDS200T2B0B-00YS70 \
-    -drive id=sata0,if=none,file=${vm_root}/windows11.qcow2,format=qcow2 \
-  -device intel-iommu,caching-mode=on \
+    -drive id=sata0,if=none,file=${vm_root}/sda1.qcow2,format=qcow2 \
   `# VFIO devices ` \
   ${pci_args[@]} \
   `# Disable on-board integrated graphics for the VM` \
@@ -170,3 +229,4 @@ qemu-system-x86_64 \
   ${usb_args[@]} \
   `# Audio` \
   -device ich9-intel-hda,addr=1f.1 -audiodev pipewire,id=snd0 -device hda-output,audiodev=snd0
+

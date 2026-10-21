@@ -8,9 +8,12 @@ vm_root="/home/will/VMs/linux-throwaway"
 mkdir -p "${vm_root}"
 
 iso_file="/home/will/Downloads/archlinux-2025.01.01-x86_64.iso"
+iso_file="/home/will/VMs/debian-13.7.0-amd64-DVD-1.iso"
 
-cp "/usr/share/edk2-ovmf/x64/OVMF_CODE.secboot.4m.fd" "${vm_root}/vars.fd"
-cp "/usr/share/edk2-ovmf/x64/OVMF_VARS.4m.fd" "${vm_root}/nvram.fd"
+# cp "/usr/share/edk2-ovmf/x64/OVMF_CODE.secboot.4m.fd" "${vm_root}/vars.fd"
+cp "/usr/share/OVMF/OVMF_CODE_4M.secboot.fd" "${vm_root}/vars.fd"
+# cp "/usr/share/edk2-ovmf/x64/OVMF_VARS.4m.fd" "${vm_root}/nvram.fd"
+cp "/usr/share/OVMF/OVMF_VARS_4M.fd" "${vm_root}/nvram.fd"
 
 disk="${vm_root}/sda.qcow2"
 if [ "${USE_SNAPSHOT}" = "true" ]
