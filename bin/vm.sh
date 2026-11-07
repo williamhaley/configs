@@ -28,7 +28,13 @@ fi
 
 get_val()
 {
-  /home/will/go/bin/yq eval-all '. as $item ireduce ({}; . *+ $item )' /home/will/VMs/global.config.yaml "${vm_root}/config.yaml" | /home/will/go/bin/yq eval "${1}"
+  override_config=""
+  if [ -f "${vm_root}/config.yaml" ]
+  then
+    override_config="${vm_root}/config.yaml"
+  fi
+
+  yq eval-all '. as $item ireduce ({}; . *+ $item )' "${HOME}/VMs/global.config.yaml" ${override_config} | yq eval "${1} | envsubst"
 }
 
 vars_source="$(get_val ".uefi.vars")"
@@ -36,9 +42,8 @@ nvram_source="$(get_val ".uefi.nvram")"
 memory="$(get_val ".memory")"
 readarray -t pci_devices < <(get_val ".vfio.pci[].address")
 readarray -t usb_host_devices < <(get_val ".vfio.usb[].address")
-
-# cp "${vars_source}" "${vm_root}/vars.fd"
-# cp "${nvram_source}" "${vm_root}/nvram.fd"
+readarray -t cdrom_devices < <(get_val ".cdrom[]")
+readarray -t additional_args < <(get_val ".args[]")
 
 function verify_usb_device_permissions() {
   for usb_host_device in "${usb_host_devices[@]}"
@@ -157,6 +162,12 @@ verify_pci_isolation
 # -tpmdev emulator,id=tpm0,chardev=chrtpm \
 # -device tpm-tis,tpmdev=tpm0 \
 
+cdroms=()
+for cdrom in "${cdrom_devices[@]}"
+do
+  cdroms+=("-drive "file=${cdrom},media=cdrom,index=${#cdroms[@]}"")
+done
+
 usb_args=()
 for usb_host_device in "${usb_host_devices[@]}"
 do
@@ -188,7 +199,7 @@ do
 
       addr_index=$((addr_index+1))
 
-      romfile="$(/home/will/go/bin/yq '.vfio.pci[] | select(.address == "'"${pci_device}"'") | .romfile // ""' "${vm_root}/config.yaml")"
+      romfile="$(yq '.vfio.pci[] | select(.address == "'"${pci_device}"'") | .romfile // ""' "${vm_root}/config.yaml")"
       if [ -n "${romfile}" ]
       then
         pci_args[-1]+=",multifunction=on,romfile=${romfile}"
@@ -196,6 +207,26 @@ do
     fi
   done
 done
+
+vars_fd="${vm_root}/vars.fd"
+if [ ! -f "${vars_fd}" ]
+then
+  cp "${vars_source}" "${vars_fd}"
+fi
+
+nvram_fd="${vm_root}/nvram.fd"
+if [ ! -f "${nvram_fd}" ]
+then
+  cp "${nvram_source}" "${nvram_fd}"
+fi
+
+primary_disk="${vm_root}/sda1.qcow2"
+if [ ! -f "${primary_disk}" ]
+then
+  # No disk exists. Make a new one every time.
+  primary_disk="${vm_root}/temp.qcow2"
+  qemu-img create -f qcow2 "${primary_disk}" 200G
+fi
 
 set -x
 
@@ -206,27 +237,25 @@ qemu-system-x86_64 \
   -cpu host,kvm=on,hv_relaxed,hv_spinlocks=0x1fff,hv_vapic,hv_time,hv_frequencies,hv_reset,hv_vpindex,hv_stimer,hv_synic,hv-vendor-id=AUTHENTICAMD \
   -smp 6,sockets=1,cores=6,threads=1 \
   -smbios type=2 \
-  `# ISO/CD-ROM` \
-  -cdrom "${vm_root}/../virtio-win-0.1.302.iso" \
+  ${cdroms[@]} \
   `# Memory` \
   -m "${memory}" -mem-prealloc \
   `# Wired virtual NIC` \
   `#-nic user,hostfwd=tcp::8000-:8000,smb=/home/will/Downloads` \
   -netdev user,id=net0,smb=/home/will/Downloads -device virtio-net-pci,netdev=net0 \
   `# UEFI` \
-  -drive if=pflash,format=raw,readonly=on,file=${vm_root}/vars.fd \
-  -drive if=pflash,format=raw,file=${vm_root}/nvram.fd \
+  -drive if=pflash,format=raw,readonly=on,file=${vars_fd} \
+  -drive if=pflash,format=raw,file=${nvram_fd} \
   `# SATA Controller` \
   -device ich9-ahci,id=sata \
     `# Specifically set serial/model numbers. Else, Windows 11 may do odd things during installation` \
     -device ide-hd,bus=sata.0,drive=sata0,serial=212611800050,model=WDS200T2B0B-00YS70 \
-    -drive id=sata0,if=none,file=${vm_root}/sda1.qcow2,format=qcow2 \
+    -drive id=sata0,if=none,file=${primary_disk},format=qcow2 \
   `# VFIO devices ` \
   ${pci_args[@]} \
-  `# Disable on-board integrated graphics for the VM` \
-  -nographic -vga none \
   `# USB devices` \
   ${usb_args[@]} \
   `# Audio` \
-  -device ich9-intel-hda,addr=1f.1 -audiodev pipewire,id=snd0 -device hda-output,audiodev=snd0
+  -device ich9-intel-hda,addr=1f.1 -audiodev pipewire,id=snd0 -device hda-output,audiodev=snd0 \
+  ${additional_args[@]}
 
