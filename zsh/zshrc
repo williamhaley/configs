@@ -112,7 +112,10 @@ export GIT_PS1_SHOWSTASHSTATE=1
 source ${HOME}/src/configs/zsh/git-prompt.sh
 
 precmd () {
-	__git_ps1 "[%D{%Y-%m-%f}T%D{%H:%M:%S}]" ":%~$ " " [%s]"
+	# Override this color in .zshrc.local if desired.
+	local color="${ps1_accent_color:-default}"
+
+	__git_ps1 "%F{${color}}%n%F{default}@%F{$color}%m%F{default} [%D{%Y-%m-%f}T%D{%H:%M:%S}]" ":%F{$color}%~%F{clear}$ " " [%s]"
 }
 
 # For a built-in prompt try...
@@ -136,15 +139,46 @@ fi
 
 alias yt-dlp='yt-dlp --write-sub --write-auto-sub --sub-lang "en.*"'
 
-
 [ -f "/home/will/.ghcup/env" ] && . "/home/will/.ghcup/env" # ghcup-env
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
+default_ascii_art='⠀⠀⠀⣀⣤⣶⡶⠿⢿⣿⣶⣶⣤⣀⠀⠀⠀
+⠀⢀⣾⣿⠋⠁⠀⠀⠀⠀⠙⢿⣿⣿⣷⣄⠀
+⠀⣿⣿⣿⡀⠀⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⡄
+⠘⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⡇
+⠀⠹⢿⣿⠟⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⠇
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⣿⠟⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⡿⠋⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⠟⠁⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⡿⠁⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⣾⡏⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢰⣿⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠘⠋⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⣾⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢿⣿⣿⣿⠟⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀
+
+no identifiable art for this machine.
+
+define or disable custom ascii art in .zshrc.local'
+
+_startup_hook() {
+	# Set ascii_art as desired in `.zshrc.local`.
+	echo "${ascii_art:-${default_ascii_art}}"
+
+	# Remove this function from precmd so it doesn't run again.
+	precmd_functions=(${precmd_functions:#_startup_hook})
+}
+
+# 3. Append the function to Zsh's precmd hooks array
+precmd_functions+=(_startup_hook)
+
+# Do this last for any per-system overrides.
 if [ -f "${HOME}/.zshrc.local" ]
 then
 	source "${HOME}/.zshrc.local"
 fi
-
 
