@@ -77,11 +77,6 @@ then
 	alias ls="exa -g"
 fi
 
-if [ -f "${HOME}/.zshrc.local" ]
-then
-	source "${HOME}/.zshrc.local"
-fi
-
 # Use modern completion system
 autoload -Uz compinit
 compinit
@@ -146,3 +141,10 @@ alias yt-dlp='yt-dlp --write-sub --write-auto-sub --sub-lang "en.*"'
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+if [ -f "${HOME}/.zshrc.local" ]
+then
+	source "${HOME}/.zshrc.local"
+fi
+
+
